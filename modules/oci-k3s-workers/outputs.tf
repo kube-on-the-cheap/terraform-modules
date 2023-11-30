@@ -13,7 +13,7 @@ output "rsa_public_key" {
 }
 
 output "oci_lb_ip" {
-  value       = local.is_master ? one([for ip in one(resource.oci_load_balancer_load_balancer.k3s_apiserver_load_balancer[*].ip_address_details) : ip.ip_address if ip.is_public]) : ""
+  value       = local.is_master ? one([for ip in one(oci_load_balancer_load_balancer.k3s_apiserver_load_balancer[*].ip_address_details) : ip.ip_address if ip.is_public]) : ""
   description = "The IP address of the provisioned API Load Balancer. Empty for workers."
 }
 
