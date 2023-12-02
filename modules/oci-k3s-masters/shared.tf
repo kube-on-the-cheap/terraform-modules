@@ -11,5 +11,5 @@ locals {
     "TerraformModule" = "oci-k3s-masters"
   }
   freeform_tags = merge(var.shared_freeform_tags, local.masters_freeform_tags)
-  node_role = var.k3s_tags["K3s-NodeInfo.NodeRole"]
+  k3s_tags      = merge(var.k3s_tags_config, var.k3s_tags_secrets)
 }

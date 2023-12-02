@@ -10,9 +10,14 @@ variable "cloud_init_script" {
   type        = string
 }
 
-variable "k3s_tags" {
+variable "k3s_tags_config" {
   type        = map(string)
   description = "A map of defined tags to apply"
+}
+
+variable "k3s_tags_secrets" {
+  type        = map(string)
+  description = "A map of secret tags to apply"
 }
 
 # Data Sources
@@ -53,7 +58,7 @@ resource "oci_core_instance_configuration" "configuration_ampere_a1" {
     launch_details {
       compartment_id = var.oci_compartment_id
       freeform_tags  = local.freeform_tags
-      defined_tags   = var.k3s_tags
+      defined_tags   = local.k3s_tags
 
       display_name        = format("k3s-masters-ampere-a1-%s", each.key)
       availability_domain = local.availability_domains.ampere_a1

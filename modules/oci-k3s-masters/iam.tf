@@ -3,9 +3,9 @@
 resource "oci_identity_dynamic_group" "k3s_nodes" {
   compartment_id = var.oci_tenancy_id
 
-  name        = format("k3s_%s_instances", local.node_role)
-  description = "Dynamic group which contains all K3s ${local.node_role} instances in this compartment"
-  matching_rule = format("All { instance.compartment.id='${var.oci_compartment_id}', tag.K3s-NodeInfo.NodeRole.value = '${local.node_role}' }"
+  name        = "k3s_master_instances"
+  description = "Dynamic group which contains all K3s master instances in this compartment"
+  matching_rule = format("All { instance.compartment.id='${var.oci_compartment_id}', tag.K3s-NodeInfo.NodeRole.value = 'master' }"
   )
 
   freeform_tags = local.masters_freeform_tags
@@ -47,7 +47,7 @@ resource "oci_identity_policy" "k3s_allow_nodes_update_self" {
 # }
 
 resource "oci_identity_policy" "k3s_allow_nodes_read_secrets" {
-  for_each = { for name, value in var.k3s_tags : name => value if startswith(name, "K3s-ClusterSecrets") }
+  for_each = var.k3s_tags_secrets
 
   compartment_id = var.oci_tenancy_id
 
