@@ -22,7 +22,7 @@ variable "k3s_tags_secrets" {
 
 # Data Sources
 
-data "template_cloudinit_config" "cloudinit" {
+data "cloudinit_config" "cloudinit" {
   gzip          = true
   base64_encode = true
 
@@ -93,7 +93,7 @@ resource "oci_core_instance_configuration" "configuration_ampere_a1" {
 
       metadata = {
         "ssh_authorized_keys" = tls_private_key.root_ssh_key.public_key_openssh
-        "user_data"           = data.template_cloudinit_config.cloudinit.rendered
+        "user_data"           = data.cloudinit_config.cloudinit.rendered
       }
       extended_metadata = {}
 
