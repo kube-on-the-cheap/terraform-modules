@@ -1,4 +1,4 @@
-# Resources 
+# Resources
 
 resource "oci_identity_dynamic_group" "k3s_masters" {
   compartment_id = var.oci_tenancy_id
