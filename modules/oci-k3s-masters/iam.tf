@@ -42,6 +42,7 @@ resource "oci_identity_policy" "k3s_allow_masters_k3s_nodeinfo_tag" {
   description = "Policy to allow each instance of K3s masters to access defined tags"
   statements = [
     "allow dynamic-group ${oci_identity_dynamic_group.k3s_masters.name} to inspect tag-namespaces in tenancy",
+    "allow dynamic-group ${oci_identity_dynamic_group.k3s_masters.name} to read tag-namespaces in compartment id ${var.oci_compartment_id}",
     "allow dynamic-group ${oci_identity_dynamic_group.k3s_masters.name} to use tag-namespaces in compartment id ${var.oci_compartment_id} where target.tag-namespace.name='K3s-NodeInfo'"
   ]
 
