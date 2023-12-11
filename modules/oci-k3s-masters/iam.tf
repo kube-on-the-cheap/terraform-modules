@@ -11,39 +11,13 @@ resource "oci_identity_dynamic_group" "k3s_masters" {
   freeform_tags = local.masters_freeform_tags
 }
 
-# resource "oci_identity_policy" "k3s_allow_masters_list_instances" {
-#   compartment_id = var.oci_tenancy_id
-
-#   name        = "allow_${oci_identity_dynamic_group.k3s_masters.name}_list_instances"
-#   description = "Policy to allow each instance of K3s master node to read instance data"
-#   statements = [
-#     "allow dynamic-group ${oci_identity_dynamic_group.k3s_masters.name} to read instance in compartment id ${var.oci_compartment_id}"
-#   ]
-
-#   freeform_tags = local.masters_freeform_tags
-# }
-
 resource "oci_identity_policy" "k3s_allow_masters_update_self" {
   compartment_id = var.oci_tenancy_id
 
   name        = "allow_${oci_identity_dynamic_group.k3s_masters.name}_update_self"
-  description = "Policy to allow each instance of K3s masters to update only itself"
+  description = "Policy to allow each instance of K3s masters to update only itself (used also for Ansible facts)"
   statements = [
     "allow dynamic-group ${oci_identity_dynamic_group.k3s_masters.name} to use instance in compartment id ${var.oci_compartment_id} where request.instance.id=target.instance.id"
-  ]
-
-  freeform_tags = local.masters_freeform_tags
-}
-
-resource "oci_identity_policy" "k3s_allow_masters_k3s_nodeinfo_tag" {
-  compartment_id = var.oci_tenancy_id
-
-  name        = "allow_${oci_identity_dynamic_group.k3s_masters.name}_defined_tags"
-  description = "Policy to allow each instance of K3s masters to access defined tags"
-  statements = [
-    "allow dynamic-group ${oci_identity_dynamic_group.k3s_masters.name} to inspect tag-namespaces in tenancy",
-    "allow dynamic-group ${oci_identity_dynamic_group.k3s_masters.name} to read tag-namespaces in compartment id ${var.oci_compartment_id}",
-    "allow dynamic-group ${oci_identity_dynamic_group.k3s_masters.name} to use tag-namespaces in compartment id ${var.oci_compartment_id} where target.tag-namespace.name='K3s-NodeInfo'"
   ]
 
   freeform_tags = local.masters_freeform_tags
@@ -89,7 +63,7 @@ resource "oci_identity_policy" "k3s_allow_masters_ccm" {
   compartment_id = var.oci_tenancy_id
 
   name        = "allow_${oci_identity_dynamic_group.k3s_masters.name}_${each.value}_${replace(each.key, "-", "_")}"
-  description = "Policy to allow K3s master nodes to ${each.value} ${each.key}"
+  description = "Policy to allow K3s master nodes to ${each.value} ${each.key} (used for Ansible facts, Cloud Controller Manager)"
   statements = [
     "allow dynamic-group ${oci_identity_dynamic_group.k3s_masters.name} to ${each.value} ${each.key} in compartment id ${var.oci_compartment_id}"
   ]
