@@ -1,3 +1,11 @@
+# Variables
+
+variable "k3s_bucket_names" {
+  type        = set(string)
+  description = "The Object Storage bucket names used by the cluster"
+  default     = []
+}
+
 # Resources
 
 resource "oci_identity_dynamic_group" "k3s_masters" {
@@ -23,16 +31,16 @@ resource "oci_identity_policy" "k3s_allow_masters_update_self" {
   freeform_tags = local.masters_freeform_tags
 }
 
-# resource "oci_identity_policy" "k3s_allow_masters_read_lb" {
-#   compartment_id = var.oci_tenancy_id
-#   name        = "allow_${oci_identity_dynamic_group.k3s_masters.name}_read_lb"
-#   description = "Policy to allow K3s master nodes to read lb resources"
-#   statements = [
-#     "allow dynamic-group ${oci_identity_dynamic_group.k3s_masters.name} to read load-balancer in compartment id ${var.oci_compartment_id}"
-#   ]
+resource "oci_identity_policy" "k3s_allow_masters_read_lb" {
+  compartment_id = var.oci_tenancy_id
+  name           = "allow_${oci_identity_dynamic_group.k3s_masters.name}_read_lb"
+  description    = "Policy to allow K3s master nodes to read lb resources"
+  statements = [
+    "allow dynamic-group ${oci_identity_dynamic_group.k3s_masters.name} to read load-balancer in compartment id ${var.oci_compartment_id}"
+  ]
 
-#   freeform_tags = local.masters_freeform_tags
-# }
+  freeform_tags = local.masters_freeform_tags
+}
 
 resource "oci_identity_policy" "k3s_allow_masters_read_secrets" {
   for_each = var.k3s_tags_secrets
@@ -66,6 +74,20 @@ resource "oci_identity_policy" "k3s_allow_masters_ccm" {
   description = "Policy to allow K3s master nodes to ${each.value} ${each.key} (used for Ansible facts, Cloud Controller Manager)"
   statements = [
     "allow dynamic-group ${oci_identity_dynamic_group.k3s_masters.name} to ${each.value} ${each.key} in compartment id ${var.oci_compartment_id}"
+  ]
+
+  freeform_tags = local.masters_freeform_tags
+}
+
+resource "oci_identity_policy" "k3s_allow_masters_write_buckets" {
+  for_each = var.k3s_bucket_names
+
+  compartment_id = var.oci_tenancy_id
+
+  name        = "allow_${oci_identity_dynamic_group.k3s_masters.name}_write_bucket_${each.value}"
+  description = "Policy to allow K3s master nodes to access bucket ${each.value}"
+  statements = [
+    "allow dynamic-group ${oci_identity_dynamic_group.k3s_masters.name} to manage objects in compartment id ${var.oci_compartment_id} where all {target.bucket.name = '${each.value}'}"
   ]
 
   freeform_tags = local.masters_freeform_tags
